@@ -8,24 +8,13 @@ library(parallel)
 library(foreach)
 library(doParallel)
 library(gridExtra)
+library(ggridges)
+library(see)
 
 ## Load & Process Data ----
 
 p500
 rcp8.5
-
-#### CHANGE OF FACTOR LEVELS IS BEING PROBLEMATIC
-
-# rename factor levels of p500
-p500$corr <- recode_factor(p500$corr, none = "Absent", gsto = "GSTO",
-                           tde = "TDE", both = "GSTO + TDE")
-
-p500$tseq <- recode_factor(p500$tseq, control = "Control",
-                           rcp4.5 = "RCP 4.5", rcp6 = "RCP 6",
-                           rcp8.5 ="RCP 8.5")
-
-# reorder factor levels of p500
-p500$corr <- factor(p500$corr, levels = c("Absent", "GSTO", "TDE", "GSTO + TDE"))
 
 # assign new data objects
 simdata <- p500
@@ -72,6 +61,7 @@ tseq_dist_plot <- tseq %>%
   ggplot(aes(x = t)) +
   geom_density(color = NA, fill = "orange", alpha = 0.5) +
   geom_vline(data = tseq_summary, aes(xintercept = mean_t), col = "darkorange", alpha = 0.75) +
+  geom_text(data = tseq_summary, aes(x = 12, y = 0.17, label = gen), size = 6) +
   scale_y_continuous(expand = c(0,0), breaks = seq(0,0.4, by = 0.03)) +
   xlim(9.5,37) +
   ylab("Performance") +
@@ -168,6 +158,18 @@ tseq_plot_data$gen <- ifelse(tseq_plot_data$gen == 1, gens[1],
 # get maximum performance on the simdata
 max_perf <- max(simdata_sum_sub$p)
 
+
+# reset factor levels of summary sim dataset
+simdata_sum_sub$corr <- ifelse(simdata_sum_sub$corr == "both", "GSTO + TDE",
+                               ifelse(simdata_sum_sub$corr == "gsto", "GSTO",
+                                      ifelse(simdata_sum_sub$corr == "tde", "TDE", "None")))
+
+# reorder factor levels of summry sim dataset
+simdata_sum_sub$corr <- factor(simdata_sum_sub$corr, levels = c("None", "GSTO", "TDE", "GSTO + TDE"))
+
+# set color scale for different tradeoffs
+colors <- c("None" = "#009E73", "GSTO" = "#56B4E9", "TDE" = "#CC79A7", "GSTO + TDE" = "#D55E00")
+
 # tile plot all data
 tpc_plot <- ggplot() +
   geom_tile(data = tseq_plot_data, aes(x = t, y = max_perf/2, fill = density, height = max_perf + 1), alpha = 0.25, color = NA) +
@@ -177,20 +179,23 @@ tpc_plot <- ggplot() +
   geom_vline(data = tseq_summary, aes(xintercept = min_t), col = "gray", lty = 1) +
   geom_line(data = simdata_sum_sub, aes(x = t, y = p, col = corr), lwd = 0.75) +
   geom_point(data = simdata_sum_sub, aes(x = t, y = p, col = corr), size = 1.5) +
-  geom_text(data = simdata_sum_sub, aes(x = 11, y = 14, label = gen), size = 4) +
-  geom_rect(data = tseq_summary, aes(xmin = 24, xmax = 36, ymin = 5, ymax = max_perf + 0.2), fill = NA, color = "black", lty = 2) +
-  geom_rect(data = tseq_summary, aes(xmin = 30, xmax = 37, ymin = 0, ymax = 6), fill = NA, color = "black", lty = 2) +
+  scale_color_manual(values = colors) +
+  #geom_text(data = simdata_sum_sub, aes(x = 11.5, y = 13.5, label = gen), size = 6) +
+  #geom_rect(data = tseq_summary, aes(xmin = 24, xmax = 36, ymin = 5, ymax = max_perf + 0.2), fill = NA, color = "black", linetype = "dashed", size = 0.3) +
+  #geom_rect(data = tseq_summary, aes(xmin = 30, xmax = 37, ymin = 0, ymax = 6), fill = NA, color = "black", linetype = "dashed", size = 0.3) +
   scale_y_continuous(expand = c(0,0), breaks = seq(0,15, by = 2.5)) +
   coord_cartesian(xlim = c(9.5,37)) +
   xlab("Temperature") + ylab("Performance") +
   facet_grid(cols = vars(gen)) +
   theme_minimal() +
   theme(legend.position = "none",
+        axis.title.y = element_text(color = "white"),
         strip.text = element_blank(),
         axis.title.x = element_blank(),
         panel.border = element_rect(size = 0.5, fill = NA, color = "black"),
         panel.grid = element_blank(),
         plot.margin = unit(c(-0.1,1,0.5,1), "lines"))
+
 
 # combine plot with tseq plot
 grid.arrange(tseq_dist_plot, tpc_plot, nrow = 2,
@@ -200,14 +205,15 @@ grid.arrange(tseq_dist_plot, tpc_plot, nrow = 2,
 tpc_plot_zoomed <- ggplot() +
   geom_tile(data = tseq_plot_data, aes(x = t, y = max_perf/2, fill = density, height = max_perf + 1), alpha = 0.25, color = NA) +
   scale_fill_gradient(low = "white", high = "darkorange", guide = "none") +
-  geom_vline(data = tseq_summary, aes(xintercept = mean_t), col = "darkorange", alpha = 0.75) +
-  geom_vline(data = tseq_summary, aes(xintercept = max_t), col = "gray", lty = 1) +
-  geom_vline(data = tseq_summary, aes(xintercept = min_t), col = "gray", lty = 1) +
-  geom_line(data = simdata_sum_sub, aes(x = t, y = p, col = corr), lwd = 1) +
-  geom_point(data = simdata_sum_sub, aes(x = t, y = p, col = corr), size = 2) +
+  geom_vline(data = tseq_summary, aes(xintercept = mean_t), col = "darkorange", alpha = 0.75, lwd = 1.5) +
+  geom_vline(data = tseq_summary, aes(xintercept = max_t), col = "gray", lty = 1, lwd = 1.5) +
+  geom_vline(data = tseq_summary, aes(xintercept = min_t), col = "gray", lty = 1, lwd = 1.5) +
+  geom_line(data = simdata_sum_sub, aes(x = t, y = p, col = corr), lwd = 1.5, alpha = 0.75) +
+  geom_point(data = simdata_sum_sub, aes(x = t, y = p, col = corr), size = 3, alpha = 0.75) +
+  scale_color_manual(values = colors) +
   geom_text(data = simdata_sum_sub, aes(x = 11, y = 14, label = gen), size = 4) +
-  scale_y_continuous(expand = c(0,0)) +
-  coord_cartesian(ylim = c(5, max_perf + 0.2), xlim = c(24, 36)) +
+  scale_y_continuous(expand = c(0,0.2), breaks = seq(7.5,14.5, by = 1)) +
+  coord_cartesian(ylim = c(7, max_perf + 0.2), xlim = c(24, 36)) +
   xlab("Temperature") + ylab("Performance") +
   facet_grid(cols = vars(gen)) +
   theme_minimal() +
@@ -220,7 +226,7 @@ tpc_plot_zoomed <- ggplot() +
 
 # combine the three plots
 grid.arrange(tseq_dist_plot, tpc_plot, tpc_plot_zoomed, nrow = 3,
-             heights = c(1,4,4.5))
+             heights = c(1.5,4,4.5))
 
 ## CTmax panel ----
 tpc_plot_zoomed_ctmax <- ggplot() +
@@ -229,15 +235,19 @@ tpc_plot_zoomed_ctmax <- ggplot() +
   geom_vline(data = tseq_summary, aes(xintercept = mean_t), col = "darkorange", alpha = 0.75, lwd = 1.5) +
   geom_vline(data = tseq_summary, aes(xintercept = max_t), col = "gray", lty = 1, lwd = 1.5) +
   geom_vline(data = tseq_summary, aes(xintercept = min_t), col = "gray", lty = 1) +
-  geom_line(data = simdata_sum_sub, aes(x = t, y = p, col = corr), lwd = 1) +
-  geom_point(data = simdata_sum_sub, aes(x = t, y = p, col = corr), size = 2) +
-  geom_text(data = simdata_sum_sub, aes(x = 11, y = 14, label = gen), size = 4) +
-  scale_y_continuous(expand = c(0,0), breaks = seq(0,5, by = 1.25)) +
+  geom_line(data = simdata_sum_sub, aes(x = t, y = p, col = corr), lwd = 1.5, alpha = 0.75) +
+  geom_point(data = simdata_sum_sub, aes(x = t, y = p, col = corr), size = 3, alpha = 0.75) +
+  scale_color_manual(values = colors) +
+  scale_y_continuous(expand = c(0.05,0), breaks = seq(0,5, by = 1.25)) +
+  guides(colour = guide_legend(override.aes = list(size=3))) +
   coord_cartesian(ylim = c(-0.1, 6), xlim = c(30, 37)) +
   xlab("Temperature") + ylab("Performance") +
   facet_grid(cols = vars(gen)) +
   theme_minimal() +
-  theme(legend.position = "none",
+  theme(legend.position = "bottom",
+        legend.title = element_blank(),
+        legend.text = element_text(size = 10),
+        axis.title.y = element_text(color = "white"),
         strip.text = element_blank(),
         panel.border = element_rect(size = 0.5, fill = NA, color = "black"),
         panel.grid = element_blank(),
@@ -249,7 +259,7 @@ grid.arrange(tseq_dist_plot,
              tpc_plot_zoomed,
              tpc_plot_zoomed_ctmax,
              nrow = 4,
-             heights = c(1,4,4,4.5))
+             heights = c(1.5,4,4,5))
 
 
 ## Plot PDF of performance ----
@@ -382,56 +392,221 @@ perf_dens_plot_data$gen <- ifelse(perf_dens_plot_data$gen == 1, gens[1],
 # merge density plot data with population size data
 perf_dens_plot_data <- merge(perf_dens_plot_data, popsizes, by = c("gen", "corr"), all = TRUE)
 
+# reset factor levels of summary sim dataset
+perf_dens_plot_data$corr <- ifelse(perf_dens_plot_data$corr == "both", "GSTO + TDE",
+                               ifelse(perf_dens_plot_data$corr == "gsto", "GSTO",
+                                      ifelse(perf_dens_plot_data$corr == "tde", "TDE", "None")))
+
+# reorder factor levels of summry sim dataset
+perf_dens_plot_data$corr <- factor(perf_dens_plot_data$corr, levels = c("None", "GSTO", "TDE", "GSTO + TDE"))
+
 # plot
 pdf_plot <- perf_dens_plot_data %>%
-  ggplot(aes(x = t, y = (density * n) / 100, fill = corr, col = corr)) +
-  geom_area(alpha = 0.5, position = "identity") +
-  coord_cartesian(xlim = c(3,max(perf_dens_plot_data$t))) +
-  ylab("Density * Population Size") +
+  ggplot(aes(x = t, y = density * (n/100), fill = corr, col = corr)) +
+  geom_area(alpha = 0.5, position = "identity", lwd = 0.5) +
+  geom_vline(xintercept = 5, lty = 2) +
+  scale_color_manual(values = colors) +
+  scale_fill_manual(values = colors) +
+  coord_cartesian(ylim = c(3,max(perf_dens_plot_data$t))) +
+  ylab("Scaled Density") +
   xlab("Performance") +
+  scale_y_continuous(expand = expansion(mult = c(0,0.01))) +
+  scale_x_continuous(expand = c(0,0), breaks = seq(0,14, by = 2)) +
   facet_grid(cols = vars(gen)) +
   theme_minimal() +
   theme(legend.position = "bottom",
-        strip.text = element_blank(),
+        legend.title = element_blank(),
+        strip.text = element_text(size = 12),
         panel.border = element_rect(size = 0.5, fill = NA, color = "black"),
         panel.grid = element_blank(),
-        axis.text.y = element_text(color = "white"),
-        plot.margin = unit(c(-0.5,1,1,1), "lines"))
+        plot.margin = unit(c(1,1,1,1), "lines")) +
+  coord_flip()
+
+## Getting performance metrics
+
+perf_data <- perf_dens_plot_data
+
+perf_data <- perf_data %>% select(gen = gen, corr = corr, density = density,
+                    performance = t, n = n)
+
+perf_data[rep(seq_along(perf_data$density))]
+
+dsplot[rep(seq_along(dsplot$density), dsplot$density),]
+
+perf_dens_plot_data %>%
+  select(gen, corr, scaled_density) %>%
+  group_by(gen, corr) %>%
+  summarise(scaled_density = sum(scaled_density)) %>%
+  ungroup() %>%
+  as.data.frame()
+
+# mean performance
+simdata_sum$m_pred_perf <- rep(NA, nrow(simdata_sum))
+
+for(i in 1:nrow(simdata_sum)){
+
+  simdata_sum$m_pred_perf[i] <- mean(simdata_sum$pred_perf[[i]])
+
+}
+
+# population size * performance
+simdata_sum$n_p <- simdata_sum$m_pred_perf * (simdata_sum$N / 100)
+
+# times performance was below X
+simdata_sum$times_zero <- rep(NA, nrow(simdata_sum))
+simdata_sum$times_below <- rep(NA, nrow(simdata_sum))
+
+for(i in 1:nrow(simdata_sum)){
+
+  perfs <- simdata_sum$pred_perf[[i]]
+
+  simdata_sum$times_zero[i] <- (length(perfs[perfs == 0])/length(perfs)) * 100
+  simdata_sum$times_below[i] <- (length(perfs[perfs < 5])/length(perfs)) * 100
+
+}
+
+## Ridges plot trial
+
+# add scaled density variable
+perf_dens_plot_data <- perf_dens_plot_data %>% mutate(scaled_density = density * (n/100))
+
+# data for densities plot
+dsplot <- perf_dens_plot_data %>% select(gen = gen, corr = corr, performance = t, scaled_density = scaled_density)
+
+# rescale density variable
+dsplot$density <- round((dsplot$sdensity / max(dsplot$sdensity)) * 1000)
+
+# reshape dataset
+dsplot2 <- dsplot[rep(seq_along(dsplot$density), dsplot$density),]
+
+dsplot2 %>%
+  ggplot(aes(x = performance, y = corr, fill = corr, col = corr)) +
+  geom_density_ridges() +
+  xlim(5,max_perf) +
+  facet_grid(cols = vars(gen)) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
 
 
-# combine with other plots
-grid.arrange(tseq_dist_plot,
-             tpc_plot,
-             tpc_plot_zoomed,
-             tpc_plot_zoomed_ctmax,
-             pdf_plot,
-             nrow = 5,
-             heights = c(1,4,4,4.5,5.5))
+library(bayesplot)
+
+dsplot2 %>%
+  ggplot(aes(x = ))
+
+dsplot %>%
+  ggplot(aes(x = performance, y = corr, height = scaled_density, group = corr, col = corr, fill = corr)) +
+  geom_density_ridges(stat = "identity" , scale = 5, alpha = 0.5, lwd = 0.5 ) +
+  scale_color_manual(values = colors) +
+  scale_fill_manual(values = colors) +
+  geom_vline(xintercept = 5, lty = 2) +
+  facet_grid(cols = vars(gen)) +
+  xlab("Performance") +
+  scale_x_continuous(expand = c(0,0), breaks = seq(0,14, by = 2)) +
+  theme_minimal() +
+  theme(legend.position = "bottom",
+        legend.title = element_blank(),
+        strip.text = element_text(size = 12),
+        axis.text.x = element_blank(),
+        axis.title.x = element_blank(),
+        panel.border = element_rect(size = 0.5, fill = NA, color = "black"),
+        panel.grid = element_blank(),
+        plot.margin = unit(c(1,1,1,1), "lines")) +
+  coord_flip()
+
+## Barplot for area under the curve
+
+# make data
+barplot_data <- tibble(gen = rep(c(5,30,55,75),4),
+                       corr = c(rep("None",4), rep("GSTO",4), rep("TDE",4), rep("GSTO + TDE",4)),
+                       area = c(4835,4965,4387,746,5550,5950,5315,654,5150,5550,5603,5020,5350,5900,6250,4458))
+
+# reorder factor levels
+barplot_data$corr <- factor(barplot_data$corr, levels = c("None", "GSTO", "TDE", "GSTO + TDE"))
+
+# plot itself
+barplot_data %>%
+  ggplot(aes(x = as.factor(gen), y = area, fill = factor(corr), col = factor(corr))) +
+  geom_bar(stat = "identity", position = "dodge", alpha = 0.5) +
+  scale_color_manual(values = colors) +
+  scale_fill_manual(values = colors) +
+  xlab("Generation") +
+  ylab("Combined Performance (Area)") +
+  scale_y_continuous(expand = c(0,0), breaks = seq(1000,6000, by = 1000)) +
+  theme_minimal() +
+  theme(legend.position = "bottom",
+        legend.title = element_blank(),
+        axis.text.x = element_text(size = 12),
+        panel.grid = element_blank(),
+        axis.line = element_line(color = "black", size = 1))
 
 ## Plot for population size over time
 
+# rename dataset
 simdata_2 <- p500
 
+# get the summary data set
 simdata_2 <- simdata_2 %>%
-  filter(tseq != "Control") %>%
+  filter(tseq != "control") %>%
   group_by(gen,corr,tseq) %>%
   summarise(as.data.frame(table(gen, corr, tseq))) %>%
   ungroup() %>%
   mutate(mean_n = Freq / 100) %>%
   mutate(gen = as.numeric(gen))
 
+# rename & reorder factor levels corr
+levels(simdata_2$corr) <- c("GSTO + TDE", "GSTO", "None", "TDE")
+simdata_2$corr <- factor(simdata_2$corr, levels = c("None", "GSTO", "TDE", "GSTO + TDE"))
+
+# rename & reorder factor levels tseq
+levels(simdata_2$tseq) <- c("RCP 4.5", "RCP 6", "RCP 8.5")
+
+# plot itself
 simdata_2 %>%
-  filter(gen > 4) %>%
   ggplot(aes(x = gen, y = mean_n, col = corr)) +
   geom_hline(aes(yintercept = 500), lty = 2) +
-  geom_line(lwd = 1.1)+
-  scale_color_discrete(name = "Genetic Correlation") +
+  geom_line(lwd = 1.1) +
+  scale_color_manual(values = colors, name = "Genetic Correlation") +
+  scale_x_continuous(breaks = seq(0, 80, by = 20)) +
   xlab("Generation") + ylab("Mean Population Size") +
   facet_grid(cols = vars(tseq)) +
   theme_minimal() +
-  theme(legend.position = c(0.1,0.20),
+  theme(legend.position = c(0.12,0.20),
         strip.text = element_text(size = 12),
+        panel.grid.minor = element_blank(),
+        strip.text.x = element_text(size = 12, face = "bold"),
         panel.border = element_rect(size = 0.5, fill = NA, color = "black"))
+
+## Plot trait dynamic over time
+
+# get tseq characteristics per generation
+tseq_means <- tseq %>%
+  group_by(gen) %>%
+  summarise(mean_t = mean(t),
+            max_t = max(t),
+            min_t = min(t))
+
+# get trait characteristics
+simdata_traits <- simdata %>%
+  group_by(corr, gen) %>%
+  summarise(topt = mean(topt),
+            ctmax = mean(ctmax),
+            ctmin = mean(ctmin))
+
+# trying to plot
+simdata_traits %>%
+  ggplot(aes(x = gen, y = topt, col = corr)) +
+  geom_line() +
+  geom_line(data = tseq_means, aes(x = gen, y = mean_t))
+
+ggplot()+
+  geom_ribbon(data = tseq_means, aes(x = gen, ymin = min_t, ymax = max_t), alpha = 0.5) +
+  geom_line(data = tseq_means, aes(x = gen, y = mean_t)) +
+  geom_ribbon(data = simdata_traits, aes(x = gen, ymin = ctmin, ymax = ctmax, fill = corr, col = corr), alpha = 0.25) +
+  geom_line(data = simdata_traits, aes(x = gen, y = topt, col = corr), lwd = 1) +
+  facet_grid(cols = vars(corr)) +
+  theme(legend.position = "top")
+
+
 
 
 
