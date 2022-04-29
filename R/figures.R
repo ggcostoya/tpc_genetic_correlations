@@ -1,6 +1,5 @@
-# Guillermo Garcia Costoya
 
-### Plot Figures
+### Plot Figures ####
 
 ## Packages ----
 
