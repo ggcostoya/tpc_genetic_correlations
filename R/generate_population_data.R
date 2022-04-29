@@ -147,13 +147,33 @@ gsto_50 <- generate_population(reps, tpts = tpts, n = 50, corr = "gsto", s = sco
 tde_50 <- generate_population(reps, tpts = tpts, n = 50, corr = "tde", s = scorr)
 both_50 <- generate_population(reps, tpts = tpts, n = 50, corr = "both", s = scorr)
 
-# N = 50
+# N = 500
 none_500 <- generate_population(reps, tpts = tpts, n = 500, corr = "none", s = 0)
 gsto_500 <- generate_population(reps, tpts = tpts, n = 500, corr = "gsto", s = scorr)
 tde_500 <- generate_population(reps, tpts = tpts, n = 500, corr = "tde", s = scorr)
 both_500 <- generate_population(reps, tpts = tpts, n = 500, corr = "both", s = scorr)
 
-save.image(file = "data/pop_tseq_data.RData")
+# N = 5000
+none_5000 <- generate_population(reps, tpts = tpts, n = 5000, corr = "none", s = 0)
+gsto_5000 <- generate_population(reps, tpts = tpts, n = 5000, corr = "gsto", s = scorr)
+tde_5000 <- generate_population(reps, tpts = tpts, n = 5000, corr = "tde", s = scorr)
+both_5000 <- generate_population(reps, tpts = tpts, n = 5000, corr = "both", s = scorr)
+
+## Save files
+
+save(none_50, file = "none_50.RData")
+save(gsto_50, file = "gsto_50.RData")
+save(tde_50, file = "tde_50.RData")
+save(both_50, file = "both_50.RData")
+save(none_500, file = "none_500.RData")
+save(gsto_500, file = "gsto_500.RData")
+save(tde_500, file = "tde_500.RData")
+save(both_500, file = "both_500.RData")
+save(none_5000, file = "none_5000.RData")
+save(gsto_5000, file = "gsto_5000.RData")
+save(tde_5000, file = "tde_5000.RData")
+save(both_5000, file = "both_5000.RData")
+
 
 
 

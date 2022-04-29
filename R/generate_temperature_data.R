@@ -82,5 +82,16 @@ high_2sd <- generate_tseq(reps, gen, days, mean_0, sd_0 * 2, burnin, mean_c = 2.
 # RCP 8.5 with x2 initial SD, Only change in SD
 high_2sd_sd <- generate_tseq(reps, gen, days, mean_0, sd_0 * 2, burnin, mean_c = 0, sd_c = sd_rel_factor * 2.96)
 
+## Save data ----
+
+save(control, file = "control.RData")
+save(control_2sd, file = "control_2sd.RData")
+save(low, file = "low.RData")
+save(mid, file = "mid.RData")
+save(high, file = "high.RData")
+save(high_m, file = "high_m.RData")
+save(high_sd, file = "high_sd.RData")
+save(high_2sd, file = "high_2sd.RData")
+save(high_2sd_sd, file = "high_2sd_sd.RData")
 
 
