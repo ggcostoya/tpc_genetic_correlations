@@ -341,7 +341,7 @@ parallel_simulation <- function(pops, tseqs, corr_name, tseq_name){
 
     foreach(j = 1:length(tseqs)) %do% {
 
-      sim <- simulation(pop = pops[[i]], tseq = tseqs[[i]])
+      sim <- simulation(pop = pops[[i]], tseq = tseqs[[j]])
 
       sim %>% mutate(pop_n = rep(i, nrow(.)), tseq_n = rep(j, nrow(.)))
 
@@ -469,7 +469,7 @@ parallel_simulation_sum <- function(pops, tseqs, corr_name, tseq_name){
 
     foreach(j = 1:length(tseqs)) %do% {
 
-      sim <- simulation_sum(pop = pops[[i]], tseq = tseqs[[i]])
+      sim <- simulation_sum(pop = pops[[i]], tseq = tseqs[[j]])
 
       sim %>% mutate(pop_n = rep(i, nrow(.)), tseq_n = rep(j, nrow(.)))
 
