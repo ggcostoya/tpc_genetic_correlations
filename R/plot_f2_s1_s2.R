@@ -135,9 +135,9 @@ summary %>%
   facet_grid(cols = vars(tseq), rows = vars(k), scales = "free") +
   geom_text(data = text_data, aes(x = x, y = y, label = label), size = 3, col = "black") +
   theme_minimal() +
-  theme(legend.position = c(0.14, 0.12),
-        legend.text = element_text(size = 8),
-        legend.title = element_text(size = 10),
+  theme(legend.position = c(0.16, 0.12),
+        legend.text = element_text(size = 9),
+        legend.title = element_blank(),
         strip.text = element_text(size = 12),
         panel.grid.minor = element_blank(),
         panel.grid.major = element_line(size = 0.25),
@@ -201,6 +201,7 @@ text_data_s1 <- data.frame(
   y = c(475,425,475,425))
 
 s1_data %>%
+  filter(gen > 4) %>%
   ggplot(aes(x = gen, y = n, col = corr)) +
   geom_hline(aes(yintercept = 0), lty = 2) +
   geom_line(lwd = 1, alpha = 0.75) +
@@ -210,9 +211,9 @@ s1_data %>%
   facet_grid(cols = vars(climate_model), rows = vars(initial_sd)) +
   geom_text(data = text_data_s1, aes(x = x, y = y, label = label), size = 3, col = "black") +
   theme_minimal() +
-  theme(legend.position = c(0.16, 0.18),
-        legend.text = element_text(size = 8),
-        legend.title = element_text(size = 8),
+  theme(legend.position = c(0.2, 0.15),
+        legend.text = element_text(size = 9),
+        legend.title = element_blank(),
         strip.text = element_text(size = 12),
         panel.grid.minor = element_blank(),
         panel.grid.major = element_line(size = 0.25),
@@ -226,29 +227,29 @@ s2_data <- summary_p500s %>%
   filter(climate_model != "control", initial_sd == "Initial SD = 1°C")
 
 # reshape climate model variable
-s2_data$climate_model <- ifelse(s2_data$climate_model == "high", "Mean +2.96°C, SD +0.44°C",
+s2_data$climate_model <- ifelse(s2_data$climate_model == "high", "M. +2.96°C, SD +0.44°C",
                                 ifelse(s2_data$climate_model == "high_m",
-                                       "Mean +2.96°C, SD +0°C",
-                                       "Mean +0°C, SD +0.44°C"))
+                                       "M. +2.96°C, SD +0°C",
+                                       "M. +0°C, SD +0.44°C"))
 s2_data$climate_model <- as.factor(s2_data$climate_model)
 s2_data$climate_model <- factor(s2_data$climate_model,
-                                levels = c("Mean +2.96°C, SD +0.44°C",
-                                           "Mean +2.96°C, SD +0°C",
-                                           "Mean +0°C, SD +0.44°C"))
+                                levels = c("M. +2.96°C, SD +0.44°C",
+                                           "M. +2.96°C, SD +0°C",
+                                           "M. +0°C, SD +0.44°C"))
 
 # generate text data
 text_data_s2 <- data.frame(
   label = c("a)","b)","c)"),
-  climate_model = c("Mean +2.96°C, SD +0.44°C",
-                    "Mean +2.96°C, SD +0°C",
-                    "Mean +0°C, SD +0.44°C"),
+  climate_model = c("M. +2.96°C, SD +0.44°C",
+                    "M. +2.96°C, SD +0°C",
+                    "M. +0°C, SD +0.44°C"),
   x = rep(10,3),
   y = rep(475,3))
 text_data_s2$climate_model <- as.factor(text_data_s2$climate_model)
 text_data_s2$climate_model <- factor(text_data_s2$climate_model,
-                                levels = c("Mean +2.96°C, SD +0.44°C",
-                                           "Mean +2.96°C, SD +0°C",
-                                           "Mean +0°C, SD +0.44°C"))
+                                levels = c("M. +2.96°C, SD +0.44°C",
+                                           "M. +2.96°C, SD +0°C",
+                                           "M. +0°C, SD +0.44°C"))
 
 
 s2_data %>%
@@ -262,9 +263,9 @@ s2_data %>%
   facet_wrap(~ climate_model, strip.position = "top") +
   geom_text(data = text_data_s2, aes(x = x, y = y, label = label), size = 4, col = "black") +
   theme_minimal() +
-  theme(legend.position = c(0.88, 0.22),
-        legend.text = element_text(size = 8),
-        legend.title = element_text(size = 10),
+  theme(legend.position = c(0.13, 0.28),
+        legend.text = element_text(size = 9),
+        legend.title = element_blank(),
         strip.text = element_text(size = 10),
         panel.grid.minor = element_blank(),
         panel.grid.major = element_line(size = 0.25),
