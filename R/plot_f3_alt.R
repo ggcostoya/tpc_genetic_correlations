@@ -127,7 +127,7 @@ tpc_plot <- ggplot() +
         panel.grid.minor.y = element_blank(),
         panel.grid.major.y = element_line(size = 0.25),
         plot.margin = unit(c(1,0,1,1), "lines"))
-tpc_plot <- tpc_plot + geom_text(data = tpc_plot_label_data, aes(x = x, y = y, label = label), size = 4)
+tpc_plot <- tpc_plot + geom_text(data = tpc_plot_label_data, aes(label = label), size = 4)
 
 
 ## Distribution Plot ----
@@ -264,13 +264,13 @@ pdf_plot <- summary %>%
   unnest(cols = c(pred_p)) %>%
   mutate(scaled_freq = freq * n) %>%
   ggplot(aes(x = p, y = scaled_freq, col = corr, fill = corr)) +
-  geom_area(position = "identity", alpha = 0.4) +
+  geom_area(position = "identity", alpha = 0.25, lwd = 0.25) +
   scale_color_manual(values = colors) +
   scale_fill_manual(values = colors) +
   scale_y_continuous(expand = c(0,0), breaks = seq(0, 300, by = 100)) +
   scale_x_continuous(breaks = seq(0, 15, by = 2.5), limits = c(0,15)) +
   #geom_hline(aes(yintercept = 0), lwd = 1.25) +
-  ylab("Number of individuals") +
+  ylab("N") +
   xlab("Performance") +
   coord_cartesian(ylim = c(0.5,15)) +
   facet_grid(rows = vars(gen)) +
@@ -290,11 +290,55 @@ pdf_plot <- summary %>%
         plot.margin = unit(c(1,1,1,0), "lines")) +
   coord_flip()
 
-#pdf_plot <- pdf_plot + geom_text(data = pdf_plot_label_data, aes(x = x, y = y, label = label), size = 3.5)
 
 grid.arrange(tpc_plot, pdf_plot, ncol = 2,
-             widths = c(4,2))
+             widths = c(4,1.5))
 
+## Trait Plots $$ ----
+
+## tpts summary object
+tpts_summary <- p500 %>%
+  filter(tseq == "+2.96°C") %>%
+  filter(gen > 4) %>%
+  group_by(corr, tseq, gen) %>%
+  summarise(topt = mean(topt, na.rm = T),
+            pmax = mean(pmax, na.rm = T),
+            ctmin = mean(ctmin, na.rm = T),
+            ctmax = mean(ctmax, na.rm = T),
+            mid = mean(mid, na.rm = T)) %>%
+  ungroup()
+
+## get longer tseq_summary
+
+tseq_summary_2 <- tseq %>%
+  group_by(gen) %>%
+  filter(gen > 4) %>%
+  summarise(mean_t = mean(t),
+            max_t = max(t),
+            min_t = min(t))
+
+## Plot itself
+
+ggplot() +
+  geom_line(data = tpts_summary, aes(x = gen, y = topt, col = corr), lwd = 1.25, alpha = 0.75) +
+  geom_line(data = tpts_summary, aes(x = gen, y = ctmax, col = corr), lwd = 0.75, alpha = 0.75) +
+  scale_color_manual(values = colors) +
+  geom_line(data = tseq_summary_2, aes(x = gen, y = mean_t), lwd = 1.25, alpha = 0.75) +
+  geom_ribbon(data = tseq_summary_2, aes(x= gen, ymin = min_t, ymax = max_t), fill = "orange", alpha = 0.25) +
+  geom_label(data = tpts_summary, aes(label = corr, fill = corr), color = "white",
+             x = 80, y = 22, hjust = 1, size = 5, label.size = NA, fontface = "bold") +
+  scale_fill_manual(values = colors) +
+  scale_y_continuous(breaks = seq(20,35,by = 2.5)) +
+  scale_x_continuous(expand = c(0,0)) +
+  ylab("Mean daily temperature (°C)") +
+  xlab("Generation number") +
+  facet_wrap(~corr, scales = "free") +
+  theme_minimal()+
+  theme(legend.position = "none",
+        strip.text = element_blank(),
+        axis.line = element_line(),
+        axis.title = element_text(size = 14),
+        panel.grid.minor = element_blank())
 
 ## zoomed plots
 
