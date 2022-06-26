@@ -60,11 +60,19 @@ k500_traits <- k500_complete %>%
             pmax = mean(pmax, na.rm = T),
             ctmin = mean(ctmin, na.rm = T),
             ctmax = mean(ctmax, na.rm = T),
-            mid = mean(mid, na.rm = T)) %>%
+            mid = mean(mid, na.rm = T),
+            r = mean(r, na.rm = T)) %>%
   ungroup()
 
 # save dataset with mean trait characteristics
 save(k500_traits, file = "k500_traits.RData")
+
+# get full data set for initial and after burn in period
+k500_initial_traits <- k500_complete %>%
+  filter(gen %in% c(0,5), tseq == "high")
+
+# save dataset with  trait characteristics
+save(k500_initial_traits, file = "k500_initial_traits.RData")
 
 # get population size per generation & add column for N0 & K
 k500_n <- k500_complete %>%
