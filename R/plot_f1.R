@@ -1,26 +1,22 @@
+
+## Plot Figure 1
+
 ## Packages ----
 
 library(tidyverse)
-library(parallel)
-library(foreach)
-library(doParallel)
 library(gridExtra)
-library(ggridges)
-library(see)
 
-### Figure 1a: Polygon TPC vs usual TPC ----
+## Figure 1a: Polygon TPC vs Equation TPC ----
 
 # build base data
-base <- tibble(t = c(10, 17.5, 25, 33.5), p = c(0,6,10,0))
-
-plot(base, type = "l")
+base <- tibble(t = c(10, 17.5, 25, 32.5), p = c(0,6,10,0))
 
 # build example TPC
 ts <- seq(0,50, by = 1)
 s <- 10
 topt <- 25
-b <- 33
-c <- 7.5
+b <- 29
+c <-6.5
 # weibull function
 ps <- ((s*(((c-1)/c)^((1-c)/c))*((((ts-topt)/b)+(((c-1)/c)^(1/c)))^(c-1))*(exp(-((((ts-topt)/b)+(((c-1)/c)^(1/c)))^c)+((c-1)/c)))))
 tpc <- tibble(t = ts, p = ps)
@@ -34,19 +30,19 @@ base %>%
   geom_segment(aes(x = 0, y = 10, xend = 25, yend = 10), lty = 2) +
   geom_segment(aes(x = 25, y = -1, xend = 25, yend = 10), lty = 2) +
   geom_segment(aes(x = 10, y = 0, xend = 10, yend = -1), lty = 2) +
-  geom_segment(aes(x = 33.5, y = 0, xend = 33.5, yend = -1), lty = 2) +
-  annotate("text", label = expression(P[max]), x = 5.5, y = 10.5, size = 5) +
-  annotate("text", label = expression(CT[min]), x = 7.5, y = -0.5, size = 5) +
-  annotate("text", label = expression(CT[max]), x = 31, y = -0.5, size = 5) +
-  annotate("text", label = expression(T[opt]), x = 23, y = -0.5, size = 5) +
-  annotate("text", label = "a)", x = 33, y = 10.5, size = 4) +
-  coord_cartesian(ylim = c(-0.5,11), xlim = c(5,35)) +
+  geom_segment(aes(x = 34, y = 0, xend = 34, yend = -1), lty = 2) +
+  annotate("text", label = expression(P[max]), x = 7.5, y = 10.75, size = 7) +
+  annotate("text", label = expression(CT[min]), x = 7, y = -0.25, size = 7) +
+  annotate("text", label = expression(CT[max]), x = 31, y = -0.25, size = 7) +
+  annotate("text", label = expression(T[opt]), x = 22.5, y = -0.25, size = 7) +
+  annotate("text", label = "A.", x = 5, y = 12, size = 5) +
+  coord_cartesian(ylim = c(-0.5,12), xlim = c(5,35)) +
   xlab("Temperature") +
   ylab("Performance") +
   theme_minimal() +
   theme(axis.line = element_line(size = 1),
         axis.text = element_blank(),
-        axis.title = element_text(size = 15),
+        axis.title = element_text(size = 16),
         panel.grid = element_blank())
 
 ### Figure 1b -- Polygon TPC and Genetic Correlations --
@@ -73,7 +69,7 @@ tde <- rbind(base_tde, high_tde, low_tde)
 
 # build base both data
 base_both <- base %>% mutate(type = rep("GSTO + TDE",4), tpc = rep("base",4))
-high_both <- base %>% mutate(t = t + c(3, 1.5, 3, -3),
+high_both <- base %>% mutate(t = t + c(3, 1.5, 2.5, -2.5),
                              p = p + c(0,1.5,3,0),
                              type = rep("GSTO + TDE",4), tpc = rep("high",4))
 low_both <- base %>% mutate(t = t + c(-3, -1.5, -3, 3),
@@ -92,7 +88,7 @@ colors_corr <- c("None" = "#009E73", "GSTO" = "#56B4E9", "TDE" = "#CC79A7", "GST
 
 # get text data
 text_data <- data.frame(
-  label = c("b) GSTO", "c) TDE", "d) GSTO + TDE"),
+  label = c("B. GSTO", "C. TDE", "D. GSTO + TDE"),
   type = c("GSTO", "TDE", "GSTO + TDE"),
   x = c(11,11,14),
   y = c(13,13,13))

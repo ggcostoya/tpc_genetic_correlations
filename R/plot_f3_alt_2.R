@@ -15,19 +15,19 @@ library(gridExtra)
 
 # filtet climate change scenario of interest
 traits <- k500_traits %>%
-  filter(tseq == "high")
+  filter(tseq == "mid")
 
 ## Proces tmperature sequence information --
 
 # load "high" tseq file
 
-# add tseq_n and generation numbers to tseq
-tseq <- foreach(i = 1:length(high)) %do% {
+# add tseq_n and generation numbers to tseq ## Changed to Mid
+tseq <- foreach(i = 1:length(mid)) %do% {
 
-  foreach(j = 1:length(high[[i]])) %do% {
+  foreach(j = 1:length(mid[[i]])) %do% {
 
     # define range of values
-    ts <- high[[i]][[j]]
+    ts <- mid[[i]][[j]]
 
     tibble(t = ts,
            tseq_n = rep(i, length(ts)),
@@ -53,6 +53,60 @@ traits$corr <- factor(traits$corr, levels = c("None", "GSTO","TDE","GSTO + TDE")
 # set color scale for different tradeoffs
 colors <- c("None" = "#009E73", "GSTO" = "#56B4E9", "TDE" = "#CC79A7", "GSTO + TDE" = "#D55E00")
 
+## Reproductive success plot
+
+r_plot <- ggplot() +
+  geom_line(data = traits %>% filter(gen > 4, gen < 85),
+            aes(x = gen, y = r, col = corr),
+            lwd = 1.25, alpha = 0.75) +
+  geom_hline(yintercept = 1, size = 1, alpha = 0.75, lty = 2) +
+  annotate("text",label = expression(paste(lambda," " ,"= 1")), x = 80, y = 2, size = 6) +
+  scale_color_manual(values = colors) +
+  scale_x_continuous(expand = c(0,0),
+                     limits = c(5, 85),
+                     breaks = c(5,20,40,60,80)) +
+  scale_y_continuous(expand = c(0,0),
+                     breaks = c(0,1,seq(3,15, by = 3)),
+                     limits = c(0,16)) +
+  annotate("text", label = "A.", y = 15, x = 8, size = 4) +
+  ylab("Mean reproductive sucess") +
+  xlab("Generation") +
+  theme_minimal() +
+  theme(legend.position = c(0.15,0.275),
+        legend.title = element_blank(),
+        legend.text = element_text(size = 10),
+        strip.text = element_blank(),
+        axis.line = element_line(),
+        axis.title = element_text(size = 12),
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_line(size = 0.25))
+
+## CTmax & Maximum Temperature plot --
+
+ctmax_plot <- ggplot() +
+  geom_line(data = tseq_sum %>% filter(gen > 4),
+            aes(x = gen, y = max_t),
+            lwd = 1.25, alpha = 0.75) +
+  geom_line(data = traits %>% filter(gen > 4),
+            aes(x = gen, y = ctmax, col = corr),
+            lwd = 1.25, alpha = 0.75) +
+  annotate("text", label = "B.", y = 35, x = 11, size = 4) +
+  annotate("text", label = expression(CT[max]), y = 35, x = 23.5, size = 5) +
+  scale_color_manual(values = colors) +
+  scale_x_continuous(expand = c(0,0)) +
+  scale_y_continuous(expand = c(0,0), limits = c(27.5,35.5)) +
+  ylab("Maximum temperature (°C)") +
+  theme_minimal() +
+  theme(legend.position = "none",
+        legend.title = element_blank(),
+        legend.text = element_text(size = 11),
+        strip.text = element_blank(),
+        axis.line = element_line(),
+        axis.title = element_text(size = 12),
+        axis.title.x = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_line(size = 0.25))
+
 ## Topt and Mean Temperature --
 
 topt_plot <- ggplot() +
@@ -62,14 +116,15 @@ topt_plot <- ggplot() +
   geom_line(data = traits %>% filter(gen > 4),
             aes(x = gen, y = topt, col = corr),
             lwd = 1.25, alpha = 0.75) +
-  annotate("text", label = "a)", y = 25.2, x = 80, size = 5) +
-  annotate("text", label = expression(T[opt]), y = 25.2, x = 70, size = 5) +
+  annotate("text", label = "C.", y = 28, x = 11, size = 4) +
+  annotate("text", label = expression(T[opt]), y = 28, x = 19, size = 5) +
   scale_color_manual(values = colors) +
   scale_x_continuous(expand = c(0,0)) +
+  scale_y_continuous(expand = c(0,0), limits = c(24.5,28.25)) +
   ylab("Mean temperature (°C)") +
   theme_minimal() +
   theme(axis.title.x = element_blank(),
-        legend.position = "top",
+        legend.position = "none",
         legend.title = element_blank(),
         legend.text = element_text(size =  10),
         strip.text = element_blank(),
@@ -78,46 +133,48 @@ topt_plot <- ggplot() +
         panel.grid.minor = element_blank(),
         panel.grid.major = element_line(size = 0.25))
 
-## CTmax and Max Temperature
+## CTmin and Min Temperature --
 
-ctmax_plot <- ggplot() +
+ctmin_plot <- ggplot() +
   geom_line(data = tseq_sum %>% filter(gen > 4),
-            aes(x = gen, y = max_t),
+            aes(x = gen, y = min_t),
             lwd = 1.25, alpha = 0.75) +
   geom_line(data = traits %>% filter(gen > 4),
-            aes(x = gen, y = ctmax, col = corr),
+            aes(x = gen, y = ctmin, col = corr),
             lwd = 1.25, alpha = 0.75) +
-  annotate("text", label = "b)", y = 28.4, x = 80, size = 5) +
-  annotate("text", label = expression(CT[max]), y = 28.4, x = 70, size = 5) +
+  annotate("text", label = "D.", y = 27, x = 11, size = 4) +
+  annotate("text", label = expression(CT[min]), y = 27, x = 23, size = 5) +
   scale_color_manual(values = colors) +
   scale_x_continuous(expand = c(0,0)) +
-  ylab("Maximum temperature (°C)") +
+  scale_y_continuous(expand = c(0,0), limits = c(9,28)) +
+  ylab("Minimum temperature (°C)") +
+  xlab("Generation") +
   theme_minimal() +
-  theme(axis.title.x = element_blank(),
-        legend.position = "none",
+  theme(legend.position = "none",
+        legend.title = element_blank(),
         strip.text = element_blank(),
         axis.line = element_line(),
         axis.title = element_text(size = 12),
         panel.grid.minor = element_blank(),
         panel.grid.major = element_line(size = 0.25))
 
-## Reproductive success
+## Pmax plot --
 
-r_plot <- ggplot() +
-  geom_line(data = traits %>% filter(gen %in% c(5:84)),
-            aes(x = gen, y = r, col = corr),
+pmax_plot <- ggplot() +
+  geom_line(data = traits %>% filter(gen > 4),
+            aes(x = gen, y = pmax, col = corr),
             lwd = 1.25, alpha = 0.75) +
+  annotate("text", label = "E.", y = 14, x = 11, size = 4) +
+  annotate("text", label = expression(P[max]), y = 14, x = 21, size = 5) +
   scale_color_manual(values = colors) +
-  scale_x_continuous(expand = c(0,0),
-                     limits = c(5, 85)) +
-  scale_y_continuous(expand = c(0,0),
-                     breaks = seq(0,15, by = 3),
-                     limits = c(0,15)) +
-  annotate("text", label = "c)", y = 14.8, x = 80, size = 5) +
-  ylab("Mean reproductive sucess") +
+  scale_x_continuous(expand = c(0,0)) +
+  scale_y_continuous(expand = c(0,0), limits = c(10,14.25)) +
+  ylab("Maximum performance") +
   xlab("Generation") +
   theme_minimal() +
   theme(legend.position = "none",
+        legend.title = element_blank(),
+        legend.text = element_text(size =  10),
         strip.text = element_blank(),
         axis.line = element_line(),
         axis.title = element_text(size = 12),
@@ -126,17 +183,16 @@ r_plot <- ggplot() +
 
 ## Combine plots
 
-grid.arrange(topt_plot, ctmax_plot, r_plot, ncol = 1, nrow = 3,
-             heights = c(4.1,4,4.1))
+lay <- rbind(c(1,1),c(2,3),c(4,5))
+
+grid.arrange(r_plot,ctmax_plot,topt_plot,ctmin_plot,pmax_plot,
+             layout_matrix = lay,
+             heights = c(4.4,4,4.2))
 
 
+## Get summary data
 
-
-
-
-
-
-
+traits %>% filter(gen %in% c(0,5,84))
 
 
 

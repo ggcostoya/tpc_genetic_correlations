@@ -40,14 +40,14 @@ colors <- c("None" = "#009E73", "GSTO" = "#56B4E9",
 
 # Build label data sets
 text_fig2 <- data.frame(
-  label = c("a)","b)","c)","d)","e)","f)","g)","h)","i)"),
+  label = c("A.","B.","C.","D.","E.","F.","G.","H.","I."),
   tseq = as.factor(c("RCP 4.5 (+1.44°C)","RCP 6 (+1.76°C)","RCP 8.5 (+2.96°C)",
                      "RCP 4.5 (+1.44°C)","RCP 6 (+1.76°C)","RCP 8.5 (+2.96°C)",
                      "RCP 4.5 (+1.44°C)","RCP 6 (+1.76°C)","RCP 8.5 (+2.96°C)")),
   n0_k = as.factor(c("No & K = 50","No & K = 50","No & K = 50",
         "No & K = 500","No & K = 500","No & K = 500",
         "No & K = 5000","No & K = 5000","No & K = 5000")),
-  x = rep(10,9),
+  x = rep(11,9),
   y = c(46,46,46,460,460,460,4600,4600,4600))
 #text_data$tseq <- factor(text_data$tseq,  levels = c("+1.44°C","+1.76°C", "+2.96°C"))
 
@@ -66,8 +66,10 @@ fig2_data %>%
   theme_minimal() +
   theme(legend.position = c(0.16, 0.12),
         legend.title = element_blank(),
-        legend.text = element_text(size = 9),
-        strip.text = element_text(size = 10, vjust = 1),
+        legend.text = element_text(size = 10),
+        strip.text.x = element_text(size = 12, vjust = 1),
+        strip.text.y = element_blank(),
+        axis.title = element_text(size = 12),
         panel.grid.minor = element_blank(),
         panel.grid.major = element_line(size = 0.25),
         panel.border = element_rect(fill = NA))
@@ -89,9 +91,9 @@ figS1_data$corr <- factor(figS1_data$corr,
 
 # climate change scenario
 figS1_data$tseq <- as.factor(figS1_data$tseq)
-levels(figS1_data$tseq) <- c("a) Control (Initial SD = 1°C)", "b) Control (Initial SD = 2°C)",
-                             "d) RCP 8.5 (Initial SD = 2°C)",
-                             "e) RCP 8.5 (Only Mean)", "f) RCP 8.5 (Only SD)")
+levels(figS1_data$tseq) <- c("A. Co., SD = 1°C", "B. Co., SD = 2°C",
+                             "C. RCP 8.5, SD = 2°C",
+                             "D. RCP 8.5, Mean", "E. RCP 8.5, SD")
 
 ## plot
 figS1_data %>%
@@ -107,15 +109,37 @@ figS1_data %>%
   theme_minimal() +
   theme(legend.position = c(0.85, 0.38),
         legend.title = element_blank(),
-        legend.text = element_text(size = 12),
-        strip.text = element_text(size = 9, vjust = 1),
+        legend.text = element_text(size = 11),
+        strip.text = element_text(size = 10, vjust = 1),
         axis.title = element_text(size = 12),
         panel.grid.minor = element_blank(),
         panel.grid.major = element_line(size = 0.25),
         panel.border = element_rect(fill = NA))
 
 
+## Extract of Figure 2 for Figure 3 ----
 
+extract <- fig2_data %>%
+  filter(n0_k == "No & K = 500", tseq == "RCP 8.5 (+2.96°C)") %>%
+  filter(gen > 4) %>%
+  ggplot(aes(x = gen, y = n, col = corr)) +
+  geom_line(lwd = 0.75, alpha = 0.75) +
+  scale_color_manual(values = colors) +
+  geom_hline(aes(yintercept = 0), col = "black", lty = 2) +
+  scale_x_continuous(expand = c(0,2), breaks = seq(20,80, by = 20)) +
+  scale_y_continuous(expand = c(0,10)) +
+  xlab("Generation") +
+  ylab("Mean population size (N)") +
+  theme_minimal() +
+  theme(legend.position = c(0.30, 0.25),
+        legend.title = element_blank(),
+        legend.text = element_text(size = 10),
+        strip.text.x = element_text(size = 12, vjust = 1),
+        strip.text.y = element_blank(),
+        axis.title = element_text(size = 12),
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_line(size = 0.25),
+        axis.line = element_line())
 
 
 
