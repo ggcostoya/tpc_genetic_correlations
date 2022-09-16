@@ -95,7 +95,6 @@ text_data <- data.frame(
 text_data$type <- factor(text_data$type,  levels = c("GSTO","TDE", "GSTO + TDE"))
 
 # plot
-
 corrs %>%
   ggplot(aes(x = t, y = p, col = type)) +
   geom_path(aes(group = tpc), lwd = 1.25, alpha = 0.75) +
