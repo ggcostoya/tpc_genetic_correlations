@@ -1,5 +1,5 @@
 
-## Plot Figure 1
+## Plot Figure 1 ##
 
 ## Packages ----
 
@@ -9,12 +9,12 @@ library(gridExtra)
 ## Figure 1a: Polygon TPC vs Equation TPC ----
 
 # build base data
-base <- tibble(t = c(10, 17.5, 25, 32.5), p = c(0,6,10,0))
+base <- tibble(t = c(10, 17.5, 24, 34), p = c(0,6,10,0))
 
 # build example TPC
 ts <- seq(0,50, by = 1)
 s <- 10
-topt <- 25
+topt <- 24
 b <- 29
 c <-6.5
 # weibull function
@@ -27,14 +27,15 @@ base %>%
   geom_line(data = tpc, aes(x = t, y = p), lwd = 3, col = "lightgray") +
   geom_point(lwd = 3) +
   geom_path(lwd = 1) +
-  geom_segment(aes(x = 0, y = 10, xend = 25, yend = 10), lty = 2) +
-  geom_segment(aes(x = 25, y = -1, xend = 25, yend = 10), lty = 2) +
+  geom_segment(aes(x = 0, y = 10, xend = 24, yend = 10), lty = 2) +
+  geom_segment(aes(x = 25, y = -1, xend = 24, yend = 10), lty = 2) +
   geom_segment(aes(x = 10, y = 0, xend = 10, yend = -1), lty = 2) +
   geom_segment(aes(x = 34, y = 0, xend = 34, yend = -1), lty = 2) +
   annotate("text", label = expression(P[max]), x = 7.5, y = 10.75, size = 7) +
   annotate("text", label = expression(CT[min]), x = 7, y = -0.25, size = 7) +
   annotate("text", label = expression(CT[max]), x = 31, y = -0.25, size = 7) +
   annotate("text", label = expression(T[opt]), x = 22.5, y = -0.25, size = 7) +
+  annotate("text", label = "Mid", x = 15.5, y = 6.5, size = 7) +
   annotate("text", label = "A.", x = 5, y = 12, size = 5) +
   coord_cartesian(ylim = c(-0.5,12), xlim = c(5,35)) +
   xlab("Temperature") +
