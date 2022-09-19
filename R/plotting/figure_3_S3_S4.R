@@ -14,7 +14,7 @@ library(gridExtra)
 ## For trait info ,load "simulations > processed_data > k500_traits.RData"
 
 # filter climte change scenario of interest
-traits <- k500_traits %>% filter(tseq == "high") #"high" F3, "low" S3, "mid" S4
+traits <- k500_traits %>% filter(tseq == "mid") #"high" F3, "low" S3, "mid" S4
 
 # rename and relevel genetic correlations factors
 traits$corr <- as.factor(traits$corr)
@@ -25,7 +25,7 @@ traits$corr <- factor(traits$corr, levels =c("None","GSTO","TDE","GSTO + TDE"))
 ## load "high.RData" for F3, "mid.RData" for S3 or "low.RData" for S4
 
 # rename temperature sequence
-tseq_raw <- high
+tseq_raw <- mid
 
 # add tseq and generation numbers
 tseq <- foreach(i = 1:length(tseq_raw)) %do% {
@@ -42,7 +42,7 @@ tseq <- foreach(i = 1:length(tseq_raw)) %do% {
 }
 
 # reshape tseq object
-tseq <- do.call(rbind, (do.call(c,tseq)))
+tseq <- do.call(rbind,(do.call("c",tseq)))
 
 # summarize thermal characteristics per generation
 tseq_sum <- tseq %>% group_by(gen) %>%
@@ -56,28 +56,29 @@ colors <- c("None" = "#009E73", "GSTO" = "#56B4E9",
 
 # reproductive success plot
 r_plot <- ggplot() +
-  geom_line(data = traits %>% filter(gen > 4, gen < 85), # > 4 is after burn-in
+  geom_rect(aes(xmin = 0, xmax = 5, ymin = 0, ymax = Inf),
+            alpha = 0.5, fill = "gray") + # polygon indicating burn-in period
+  geom_line(data = traits %>% filter(gen < 85),
             aes(x = gen, y = r, col = corr),
             lwd = 1.25, alpha = 0.75) +
   geom_hline(yintercept = 1, size = 1, alpha = 0.75, lty = 2) +
-  geom_hline(yintercept = 15, size = 1, alpha = 0.75, col = "lightgray") +
   annotate("text", label = expression(paste(lambda," " ,"= 1")),
-           x = 20, y = 2, size = 6) + # for Fig. S3. & S4, set to x = 80
+           x = 80, y = 2, size = 6) + # for Fig. S3. & S4, set to x = 80
   annotate("text", label = "A.",
            x = 8, y = 14, size = 4) +
   xlab("Generation") +
   ylab("Mean reproductive sucess") +
   scale_color_manual(values = colors) +
   scale_x_continuous(expand = c(0, 0),
-                     limits = c(5, 85),
-                     breaks = c(5, 20, 40, 60, 80)) +
+                     limits = c(-1, 85),
+                     breaks = c(0, 5, 20, 40, 60, 80)) +
   scale_y_continuous(expand = c(0, 0),
                      breaks = c(0, 1, seq(3,15, by = 3)),
                      limits = c(0, 16)) +
   theme_minimal() +
-  theme(legend.position = c(0.9,0.75), # for Fig.S3 & S4 set to c(0.15, 0.275)
+  theme(legend.position = c(0.25,0.3), # for Fig.S3 & S4 set to c(0.25, 0.3)
         legend.title = element_blank(),
-        legend.text = element_text(size = 10),
+        legend.text = element_text(size = 8),
         strip.text = element_blank(),
         axis.line = element_line(),
         axis.title = element_text(size = 12),
@@ -86,17 +87,18 @@ r_plot <- ggplot() +
 
 # ctmax & maximum temperature plot
 ctmax_plot <- ggplot() +
-  geom_line(data = tseq_sum %>% filter(gen > 4),
-            aes(x = gen, y = max_t),
+  geom_rect(aes(xmin = 0, xmax = 5, ymin = 28, ymax = Inf),
+            alpha = 0.5, fill = "gray") + # polygon indicating burn-in period
+  geom_line(data = tseq_sum, aes(x = gen-1, y = max_t),
             lwd = 1.25, alpha = 0.75) +
-  geom_line(data = traits %>% filter(gen > 5),
-            aes(x = gen, y = ctmax, col = corr),
+  geom_line(data = traits, aes(x = gen, y = ctmax, col = corr),
             lwd = 1.25, alpha = 0.75) +
   annotate("text", label = expression("B." ~ CT[max]),
-           y = 34.5, x = 20, size = 4) +
+           y = 34.5, x = 17, size = 4) +
   scale_color_manual(values = colors) +
   scale_x_continuous(expand = c(0,0),
-                     breaks = c(5, 20, 40, 60, 80)) +
+                     breaks = c(0,5, 20, 40, 60, 80),
+                     limits = c(-1, 85)) +
   scale_y_continuous(expand = c(0,0),
                      limits = c(28,35)) +
   ylab("Maximum temperature (°C)") +
@@ -113,19 +115,20 @@ ctmax_plot <- ggplot() +
 
 # topt & mean temperature plot
 topt_plot <- ggplot() +
-  geom_line(data = tseq_sum %>% filter(gen > 4),
-            aes(x = gen, y = mean_t),
+  geom_rect(aes(xmin = 0, xmax = 5, ymin = 24.75, ymax = Inf),
+            alpha = 0.5, fill = "gray") + # polygon indicating burn-in period
+  geom_line(data = tseq_sum, aes(x = gen - 1, y = mean_t),
             lwd = 1.25, alpha = 0.75) +
-  geom_line(data = traits %>% filter(gen > 5),
-            aes(x = gen, y = topt, col = corr),
+  geom_line(data = traits, aes(x = gen, y = topt, col = corr),
             lwd = 1.25, alpha = 0.75) +
   annotate("text", label = expression("C." ~ T[opt]),
-           y = 27.75, x = 20, size = 4) +
+           y = 27.75, x = 15, size = 4) +
   scale_color_manual(values = colors) +
   scale_x_continuous(expand = c(0,0),
-                     breaks = c(5, 20, 40, 60, 80)) +
+                     breaks = c(0,5, 20, 40, 60, 80),
+                     limits = c(-1,85)) +
   scale_y_continuous(expand = c(0,0),
-                     limits = c(25,28)) +
+                     limits = c(24.75,28)) +
   ylab("Mean Temperature (°C)") +
   theme_minimal() +
   theme(legend.position = "none",
@@ -140,17 +143,18 @@ topt_plot <- ggplot() +
 
 # ctmin & min temperature plot
 ctmin_plot <- ggplot() +
-  geom_line(data = tseq_sum %>% filter(gen > 4),
-            aes(x = gen, y = min_t),
+  geom_rect(aes(xmin = 0, xmax = 5, ymin = 9, ymax = Inf),
+            alpha = 0.5, fill = "gray") + # polygon indicating burn-in period
+  geom_line(data = tseq_sum ,aes(x = gen - 1, y = min_t),
             lwd = 1.25, alpha = 0.75) +
-  geom_line(data = traits %>% filter(gen > 5),
-            aes(x = gen, y = ctmin, col = corr),
+  geom_line(data = traits, aes(x = gen, y = ctmin, col = corr),
             lwd = 1.25, alpha = 0.75) +
   annotate("text", label = expression("D." ~ CT[min]),
-           y = 25, x = 20, size = 4) +
+           y = 25, x = 17, size = 4) +
   scale_color_manual(values = colors) +
   scale_x_continuous(expand = c(0,0),
-                     breaks = c(5, 20, 40, 60, 80)) +
+                     breaks = c(0, 5, 20, 40, 60, 80),
+                     limits = c(-1,85)) +
   scale_y_continuous(expand = c(0,0),
                      limits = c(9,26)) +
   ylab("Minimum Temperature (°C)") +
@@ -162,20 +166,21 @@ ctmin_plot <- ggplot() +
         strip.text = element_blank(),
         axis.line = element_line(),
         axis.title = element_text(size = 12),
-        axis.title.x = element_blank(),
         panel.grid.minor = element_blank(),
         panel.grid.major = element_line(size = 0.25))
 
 # pmax plot
 pmax_plot <- ggplot() +
-  geom_line(data = traits %>% filter(gen > 5),
-            aes(x = gen, y = pmax, col = corr),
+  geom_rect(aes(xmin = 0, xmax = 5, ymin = 9.5, ymax = Inf),
+            alpha = 0.5, fill = "gray") + # polygon indicating burn-in period
+  geom_line(data = traits, aes(x = gen, y = pmax, col = corr),
             lwd = 1.25, alpha = 0.75) +
   annotate("text", label = expression("E." ~ P[max]),
-           y = 13.75, x = 20, size = 4) +
+           y = 13.75, x = 15, size = 4) +
   scale_color_manual(values = colors) +
-  scale_x_continuous(expand = c(0,0)) +
-  scale_y_continuous(expand = c(0,0), limits = c(10,14)) +
+  scale_x_continuous(expand = c(0,0), limits = c(-1, 85),
+                     breaks = c(0,5,20,40,60,80)) +
+  scale_y_continuous(expand = c(0,0), limits = c(9.5,14)) +
   ylab("Maximum performance") +
   xlab("Generation") +
   theme_minimal() +
@@ -194,7 +199,8 @@ lay <- rbind(c(1,1),c(2,3),c(4,5))
 # combine plots and final output
 grid.arrange(r_plot,ctmax_plot,topt_plot,ctmin_plot,pmax_plot,
              layout_matrix = lay,
-             heights = c(4.4,4,4.2))
+             heights = c(4.4,4,4.2),
+             widths = c(4,4))
 
 
 
