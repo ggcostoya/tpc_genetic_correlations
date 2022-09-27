@@ -20,10 +20,42 @@ All `R` and `bash` code within this repository can be found in the corresponding
 
 Within the `bash` folder: 
 
-
-
 ### **Data Availability**
 
+All data is available at: https://drive.google.com/drive/folders/1nxoNiDcqxyInwjXeWqUe5b4KYCWmzzBf?usp=sharing
+
+**All metadata for the provided dataset is explained next**. Within the folder above there are 3 folders:
+
+- The subfolder `thermal_environments` contains the raw temperature data for all thermal environments representing different climate change scenarios. Each climate change scenario is abbreviated as follows: 
+
+  - `control`: Control scenario, no change in mean or standard deviation of temperature.
+  - `low`: RCP 4.5, +1.44 C in Mean with changes in standard deviation of temperature.
+  - `mid`: RCP 6, +1.76 C in Mean with changes in standard deviation of temperature.
+  - `high`: RCP 8.5, +2.96 C in Mean with changes in standard deviation of temperature.
+  - `control_2sd`: Control scenario, no change in mean or standard deviation (SD) of temperature but double the initial SD.
+  - `high_2sd`: RCP 8.5, +2.96 C in Mean with changes in standard deviation of temperature but double the initial SD
+  - `high_m`: RCP 8.5, but only changes in mean temperature.
+  - `high_sd`: RCP 8.5, but only changes in standard deviation of temperature.
+
+- The subfolder `starting_populations` contains the raw data for all individuals generated as part of the initial populations faced with climate change scenarios in our simulations. In all cases, each file indicates genetic correlation and initial population size (and carrying capacity) in the format `geneticcorrelation_populationsize.RData`. Initial population sizes are either `50`,`500`, or `5000`. Genetic correlations are abbreviated as:
+
+  - `none`: For no genetic correlations. 
+  - `gsto`: For the generalist-specialist trade-off (GSTO). 
+  - `tde`: For the thermodynamic effect (TDE).
+  - `both`: For both the GSTO and the TDE acting together. 
+
+- The subfolder `simulations` contains all raw and processed data from simulation runs. 
+
+  - The subfolder `raw_data` contains all simulation raw data for each of the 3 initial population sizes: `50`, `500` or `5000`. In all cases the file format is `simulation_pN0_geneticcorrelation_thermalenvironment` followed by either `sum` for simulations only containing population size at each generation or `full` for simulations containing all individual information each generation. 
+  
+  - The subfolder `processed_data` contains processed and summarized data obtained from the raw datasets using the `process_simulation_data.R` script. The files contained in this folder are: 
+  
+    - `k50` : Population size every generation for all simulations with initial population size and carrying capacity of = 50
+    - `k500` : Population size every generation for all simulations with initial population size and carrying capacity of = 500
+    - `k500` : Population size every generation for all simulations with initial population size and carrying capacity of 5000
+    - `k500_traits` : Average trait values for every generation across simulations with initial population size and carrying capacity of 500 that were exposed to the Control, RCP 4.5, RCP 6 & RCP 8.5 climate change scenarios 
+    - `complete_sim_results` : Population size every generation for all simulations.
+    - `sum_sim_results` : Average Population size every generation across all simulations of the same N0 & K and exposed to the same climate change scenario.
 
 
 
