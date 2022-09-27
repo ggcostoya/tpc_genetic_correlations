@@ -63,7 +63,7 @@ r_plot <- ggplot() +
             lwd = 1.25, alpha = 0.75) +
   geom_hline(yintercept = 1, size = 1, alpha = 0.75, lty = 2) +
   annotate("text", label = expression(paste(lambda," " ,"= 1")),
-           x = 80, y = 2, size = 6) + # for Fig. S3. & S4, set to x = 80
+           x = 20, y = 2, size = 6) + # for Fig. S3. & S4, set to x = 80
   annotate("text", label = "A.",
            x = 8, y = 14, size = 4) +
   xlab("Generation") +
@@ -76,7 +76,7 @@ r_plot <- ggplot() +
                      breaks = c(0, 1, seq(3,15, by = 3)),
                      limits = c(0, 16)) +
   theme_minimal() +
-  theme(legend.position = c(0.25,0.3), # for Fig.S3 & S4 set to c(0.25, 0.3)
+  theme(legend.position = c(0.9,0.8), # for Fig.S3 & S4 set to c(0.25, 0.3)
         legend.title = element_blank(),
         legend.text = element_text(size = 8),
         strip.text = element_blank(),
